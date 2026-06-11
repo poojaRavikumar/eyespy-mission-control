@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mission Control — Eye Spy Foundation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f1117;
+      --surface:   #171b26;
+      --border:    #252a38;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --accent:    #38bdf8;
+
+      --stage-a:   #6366f1; /* Proposal Started */
+      --stage-b:   #f59e0b; /* Proposal Submitted */
+      --stage-c:   #10b981; /* Awarded / Active */
+
+      --font-sans: 'IBM Plex Sans', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── TOP BAR ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 500;
+      color: #0f1117;
+    }
+
+    .logo-text {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .logo-sub {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .last-updated {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .refresh-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .refresh-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 32px 80px;
+    }
+
+    /* ── SECTION HEADERS ── */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── SUMMARY ROW ── */
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+
+    .stat-card .stat-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .stat-card .stat-value {
+      font-size: 26px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-card .stat-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    /* ── DEALS ── */
+    .deals-section { margin-bottom: 48px; }
+
+    .stage-group { margin-bottom: 24px; }
+
+    .stage-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .stage-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .stage-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .stage-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: auto;
+    }
+
+    .deal-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left-width: 3px;
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 8px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .deal-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .deal-meta {
+      display: flex;
+      gap: 16px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .deal-amount {
+      font-family: var(--font-mono);
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    /* ── EMAILS ── */
+    .emails-section {}
+
+    .email-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .email-table thead tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .email-table th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-align: left;
+      padding: 0 12px 12px;
+      font-weight: 400;
+    }
+
+    .email-table th:first-child { padding-left: 0; }
+    .email-table th:last-child { text-align: right; }
+
+    .email-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+
+    .email-table tbody tr:last-child { border-bottom: none; }
+    .email-table tbody tr:hover { background: var(--surface); }
+
+    .email-table td {
+      padding: 14px 12px;
+      vertical-align: middle;
+      font-size: 13px;
+    }
+
+    .email-table td:first-child { padding-left: 0; }
+    .email-table td:last-child { text-align: right; }
+
+    .email-name {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .email-date {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .email-num {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .rate-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rate-bar {
+      width: 48px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .rate-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    /* ── LOADING / ERROR STATES ── */
+    .skeleton {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 8px;
+      height: 64px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+      animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    .error-msg {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #f87171;
+      padding: 16px;
+      border: 1px solid #f8717133;
+      border-radius: 6px;
+      background: #f8717108;
+    }
+
+    .empty-msg {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--muted);
+      padding: 24px 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">MC</div>
+    <div>
+      <div class="logo-text">Mission Control</div>
+      <div class="logo-sub">Eye Spy Foundation</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="last-updated" id="last-updated">—</span>
+    <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  </div>
+</header>
+
+<main>
+
+  <!-- SUMMARY -->
+  <div class="section-label">Overview</div>
+  <div class="summary-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Pipeline</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-sub" id="stat-deals">— active deals</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Emails Sent (last 5)</div>
+      <div class="stat-value" id="stat-emails">—</div>
+      <div class="stat-sub" id="stat-open-rate">avg open rate</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Click Rate</div>
+      <div class="stat-value" id="stat-click">—</div>
+      <div class="stat-sub">last 5 campaigns</div>
+    </div>
+  </div>
+
+  <!-- GRANT PIPELINE -->
+  <div class="deals-section">
+    <div class="section-label">Grant Pipeline</div>
+    <div id="deals-container">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  </div>
+
+  <!-- MARKETING EMAILS -->
+  <div class="emails-section">
+    <div class="section-label">Marketing Emails — Last 5 Sent</div>
+    <div id="emails-container">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const STAGES = {
+    'Proposal Started':   { color: '#6366f1', order: 0 },
+    'Proposal Submitted': { color: '#f59e0b', order: 1 },
+    'Awarded / Active':   { color: '#10b981', order: 2 },
+  };
+
+  function fmt$( n ) {
+    if ( n == null || n === '' ) return '—';
+    const num = parseFloat( n );
+    if ( isNaN( num ) ) return '—';
+    return '$' + num.toLocaleString( 'en-US', { maximumFractionDigits: 0 } );
+  }
+
+  function fmtDate( iso ) {
+    if ( !iso ) return '—';
+    const d = new Date( iso );
+    return d.toLocaleDateString( 'en-US', { month: 'short', day: 'numeric', year: 'numeric' } );
+  }
+
+  function fmtDateTime( iso ) {
+    if ( !iso ) return '—';
+    const d = new Date( iso );
+    return d.toLocaleDateString( 'en-US', { month: 'short', day: 'numeric', year: 'numeric' } )
+      + ' ' + d.toLocaleTimeString( 'en-US', { hour: 'numeric', minute: '2-digit' } );
+  }
+
+  function fmtPct( n ) {
+    if ( n == null ) return '—';
+    return ( parseFloat( n ) * 100 ).toFixed( 1 ) + '%';
+  }
+
+  // ── DEALS ──
+  async function loadDeals() {
+    const container = document.getElementById( 'deals-container' );
+    try {
+      const res  = await fetch( '/api/deals' );
+      const data = await res.json();
+
+      if ( !res.ok ) throw new Error( data.error || 'Failed to load deals' );
+
+      const deals = data.results || [];
+      if ( !deals.length ) {
+        container.innerHTML = '<div class="empty-msg">No deals found in the default pipeline.</div>';
+        updateDealStats( [] );
+        return;
+      }
+
+      // Group by stage
+      const groups = {};
+      Object.keys( STAGES ).forEach( s => ( groups[ s ] = [] ) );
+      deals.forEach( d => {
+        const stage = d.properties?.dealstage_label || d.properties?.dealstage || 'Other';
+        if ( !groups[ stage ] ) groups[ stage ] = [];
+        groups[ stage ].push( d );
+      } );
+
+      let html = '';
+      Object.entries( STAGES ).forEach( ( [ stageName, cfg ] ) => {
+        const items = groups[ stageName ] || [];
+        html += `
+          <div class="stage-group">
+            <div class="stage-header">
+              <div class="stage-dot" style="background:${cfg.color}"></div>
+              <span class="stage-name">${stageName}</span>
+              <span class="stage-count">${items.length} deal${items.length !== 1 ? 's' : ''}</span>
+            </div>`;
+
+        if ( !items.length ) {
+          html += `<div class="empty-msg" style="text-align:left;padding:10px 0;font-size:11px;">No deals in this stage</div>`;
+        } else {
+          items.forEach( deal => {
+            const p = deal.properties || {};
+            html += `
+              <div class="deal-row" style="border-left-color:${cfg.color}">
+                <div>
+                  <div class="deal-name">${ p.dealname || 'Untitled Deal' }</div>
+                  <div class="deal-meta">
+                    <span>Created: ${ fmtDate( p.createdate ) }</span>
+                    <span>Close: ${ fmtDate( p.closedate ) }</span>
+                  </div>
+                </div>
+                <div class="deal-amount">${ fmt$( p.amount ) }</div>
+              </div>`;
+          } );
+        }
+        html += `</div>`;
+      } );
+
+      container.innerHTML = html;
+      updateDealStats( deals );
+
+    } catch ( err ) {
+      container.innerHTML = `<div class="error-msg">⚠ ${err.message}</div>`;
+      console.error( err );
+    }
+  }
+
+  function updateDealStats( deals ) {
+    const total = deals.reduce( ( s, d ) => s + ( parseFloat( d.properties?.amount ) || 0 ), 0 );
+    document.getElementById( 'stat-total' ).textContent = total ? fmt$( total ) : '—';
+    document.getElementById( 'stat-deals' ).textContent = `${deals.length} active deal${deals.length !== 1 ? 's' : ''}`;
+  }
+
+  // ── EMAILS ──
+  async function loadEmails() {
+    const container = document.getElementById( 'emails-container' );
+    try {
+      const res  = await fetch( '/api/emails' );
+      const data = await res.json();
+
+      if ( !res.ok ) throw new Error( data.error || 'Failed to load emails' );
+
+      const emails = data.objects || [];
+      if ( !emails.length ) {
+        container.innerHTML = '<div class="empty-msg">No sent emails found.</div>';
+        updateEmailStats( [] );
+        return;
+      }
+
+      let html = `
+        <table class="email-table">
+          <thead>
+            <tr>
+              <th>Email Name</th>
+              <th>Date &amp; Time</th>
+              <th>Delivered</th>
+              <th>Open Rate</th>
+              <th>Click Rate</th>
+            </tr>
+          </thead>
+          <tbody>`;
+
+      emails.forEach( e => {
+        const s    = e.stats || {};
+        const openR  = s.openRate  != null ? parseFloat( s.openRate )  : null;
+        const clickR = s.clickRate != null ? parseFloat( s.clickRate ) : null;
+
+        html += `
+          <tr>
+            <td><div class="email-name">${ e.name || '—' }</div></td>
+            <td><div class="email-date">${ fmtDateTime( e.publishDate || e.updatedAt ) }</div></td>
+            <td><div class="email-num">${ s.delivered?.toLocaleString() || '—' }</div></td>
+            <td>
+              <div class="rate-bar-wrap">
+                <div class="rate-bar">
+                  <div class="rate-bar-fill" style="width:${openR != null ? Math.min(openR*100,100) : 0}%;background:#38bdf8"></div>
+                </div>
+                <span class="email-num">${ openR != null ? fmtPct(openR) : '—' }</span>
+              </div>
+            </td>
+            <td>
+              <div class="rate-bar-wrap" style="justify-content:flex-end">
+                <div class="rate-bar">
+                  <div class="rate-bar-fill" style="width:${clickR != null ? Math.min(clickR*100,100) : 0}%;background:#6366f1"></div>
+                </div>
+                <span class="email-num">${ clickR != null ? fmtPct(clickR) : '—' }</span>
+              </div>
+            </td>
+          </tr>`;
+      } );
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+      updateEmailStats( emails );
+
+    } catch ( err ) {
+      container.innerHTML = `<div class="error-msg">⚠ ${err.message}</div>`;
+      console.error( err );
+    }
+  }
+
+  function updateEmailStats( emails ) {
+    document.getElementById( 'stat-emails' ).textContent = emails.length;
+
+    const rates = emails.map( e => parseFloat( e.stats?.openRate ) ).filter( n => !isNaN( n ) );
+    const clickRates = emails.map( e => parseFloat( e.stats?.clickRate ) ).filter( n => !isNaN( n ) );
+
+    const avgOpen  = rates.length  ? rates.reduce( ( a, b ) => a + b, 0 ) / rates.length   : null;
+    const avgClick = clickRates.length ? clickRates.reduce( ( a, b ) => a + b, 0 ) / clickRates.length : null;
+
+    document.getElementById( 'stat-open-rate' ).textContent = avgOpen  != null ? fmtPct( avgOpen )  + ' avg open rate' : 'avg open rate';
+    document.getElementById( 'stat-click' ).textContent     = avgClick != null ? fmtPct( avgClick ) : '—';
+  }
+
+  // ── LOAD ALL ──
+  async function loadAll() {
+    const btn = document.getElementById( 'refresh-btn' );
+    btn.disabled = true;
+    btn.textContent = '↻ Loading…';
+
+    // reset skeletons
+    document.getElementById( 'deals-container' ).innerHTML =
+      '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+    document.getElementById( 'emails-container' ).innerHTML =
+      '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+
+    await Promise.all( [ loadDeals(), loadEmails() ] );
+
+    const now = new Date();
+    document.getElementById( 'last-updated' ).textContent =
+      'Updated ' + now.toLocaleTimeString( 'en-US', { hour: 'numeric', minute: '2-digit' } );
+
+    btn.disabled = false;
+    btn.textContent = '↻ Refresh';
+  }
+
+  // Auto-load on page open
+  loadAll();
+</script>
+</body>
+</html>
